@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "prettify": "prettier 'src/**/*.{ts,tsx}' --write",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -15,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/thibaultboursier/use-offline-queue/issues"
   },
-  "homepage": "https://github.com/thibaultboursier/use-offline-queue#readme"
+  "homepage": "https://github.com/thibaultboursier/use-offline-queue#readme",
+  "typings": "./lib/index.d.ts",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.1.0"
+  }
 }
