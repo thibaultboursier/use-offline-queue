@@ -1,0 +1,19 @@
+{
+  "name": "use-offline-queue",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thibaultboursier/use-offline-queue.git"
+  },
+  "author": "Thibault Boursier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thibaultboursier/use-offline-queue/issues"
+  },
+  "homepage": "https://github.com/thibaultboursier/use-offline-queue#readme"
+}
