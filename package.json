@@ -1,7 +1,7 @@
 {
   "name": "use-offline-queue",
   "version": "0.1.0",
-  "description": "",
+  "description": "React hook which allows to put functions in a queue in offline mode",
   "main": "./lib/index.js",
   "scripts": {
     "build": "tsc",
@@ -15,7 +15,10 @@
   },
   "keywords": [
     "react",
-    "react-hook"
+    "react-hook",
+    "queue",
+    "offline",
+    "online"
   ],
   "author": "Thibault Boursier",
   "license": "MIT",
