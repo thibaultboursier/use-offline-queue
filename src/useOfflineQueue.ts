@@ -64,7 +64,8 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
 
   const enqueue = (callback: Function) => {
     if (isOnline) {
-      return callback();
+      callback();
+      return;
     }
 
     offlineTimeoutRef.current && clearTimeout(offlineTimeoutRef.current);
@@ -73,7 +74,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
     queueRef.current.push(callback);
   };
 
-  const isEmpty = (): boolean => queueRef.current.length === 0;
+  const isQueueEmpty = (): boolean => queueRef.current.length === 0;
 
   const onOffline = () => {
     setIsOnline(false);
@@ -97,9 +98,9 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
     dequeueAll,
     dequeueAllAsync,
     enqueue,
-    isEmpty,
-    queue: queueRef.current,
+    isQueueEmpty,
     isOnline,
     peek,
+    queue: queueRef.current,
   };
 };
