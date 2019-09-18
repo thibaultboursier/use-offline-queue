@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import useForceUpdate from 'use-force-update';
 
 export interface Config {
   isQueueAsync?: boolean;
@@ -19,6 +20,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
   );
   const offlineTimeoutRef = useRef<number>();
   const queueRef = useRef<Function[]>([]);
+  const forceUpdate = useForceUpdate();
 
   useEffect(() => {
     addEventListener('online', onOnline);
@@ -31,31 +33,32 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
   }, []);
 
   const clearQueue = () => {
-    queueRef.current = [];
+    queueRef.current.length = 0;
+    forceUpdate();
   };
 
   const createOfflineTimeout = () => {
     offlineTimeoutRef.current = setTimeout(clearQueue, timeoutInMS);
   };
 
-  const dequeue = () => {
+  const dequeueAll = () => {
     if (isQueueAsync) {
-      dequeueAsync();
+      dequeueAllAsync();
     } else {
-      dequeueSync();
+      queueRef.current.forEach(callback => callback());
+      clearQueue();
     }
   };
 
-  const dequeueAsync = async () => {
-    for (const callback of queueRef.current) {
+  const dequeueAllAsync = async () => {
+    const callbacks = [...queueRef.current];
+
+    for (const callback of callbacks) {
       await callback();
+      queueRef.current.shift();
+      forceUpdate();
     }
 
-    clearQueue();
-  };
-
-  const dequeueSync = async () => {
-    queueRef.current.forEach(callback => callback());
     clearQueue();
   };
 
@@ -67,10 +70,10 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
     offlineTimeoutRef.current && clearTimeout(offlineTimeoutRef.current);
     timeoutInMS && createOfflineTimeout();
 
-    queueRef.current = [...queueRef.current, callback];
+    queueRef.current.push(callback);
   };
 
-  const getQueue = () => queueRef.current;
+  const isEmpty = (): boolean => queueRef.current.length === 0;
 
   const onOffline = () => {
     setIsOnline(false);
@@ -85,17 +88,17 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
   const onOnline = () => {
     setIsOnline(true);
     offlineTimeoutRef.current && clearTimeout(offlineTimeoutRef.current);
-    queueRef.current.length > 0 && dequeue();
+    queueRef.current.length > 0 && dequeueAll();
   };
 
   const peek = () => queueRef.current[0];
 
   return {
-    dequeue,
-    dequeueAsync,
-    dequeueSync,
+    dequeueAll,
+    dequeueAllAsync,
     enqueue,
-    getQueue,
+    isEmpty,
+    queue: queueRef.current,
     isOnline,
     peek,
   };

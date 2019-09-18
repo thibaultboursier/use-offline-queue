@@ -46,5 +46,8 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
-  "typings": "./lib/index.d.ts"
+  "typings": "./lib/index.d.ts",
+  "dependencies": {
+    "use-force-update": "^1.0.7"
+  }
 }
