@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import useForceUpdate from 'use-force-update';
+import { useOffline } from './hooks/useOffline';
+import { useQueue } from './hooks/useQueue';
 
 export interface Config {
   isQueueAsync?: boolean;
@@ -15,92 +17,80 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
     ...initialConfig,
     ...config,
   };
-  const [isOnline, setIsOnline] = useState(() =>
-    navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true
-  );
   const offlineTimeoutRef = useRef<number>();
-  const queueRef = useRef<Function[]>([]);
+  const {
+    clearQueue,
+    dequeue,
+    enqueue,
+    isQueueEmpty,
+    peek,
+    queue,
+  } = useQueue();
+  const { isOnline } = useOffline(onOffline, onOnline);
   const forceUpdate = useForceUpdate();
 
-  useEffect(() => {
-    addEventListener('online', onOnline);
-    addEventListener('offline', onOffline);
+  const dequeueAll = () => {
+    if (isQueueAsync) {
+      dequeueAllAsync();
+    } else {
+      queue.forEach(callback => callback());
+      clearQueue();
+    }
+  };
 
-    return () => {
-      removeEventListener('online', onOnline);
-      removeEventListener('offline', onOffline);
-    };
-  }, []);
+  const dequeueAllAsync = async () => {
+    const callbacks = [...queue];
 
-  const clearQueue = () => {
-    queueRef.current.length = 0;
-    forceUpdate();
+    for (const callback of callbacks) {
+      if (!isOnline) {
+        return;
+      }
+
+      await callback();
+      dequeue();
+    }
+
+    clearQueue();
+  };
+
+  const addToQueue = (callback: Function) => {
+    if (isOnline) {
+      callback();
+      return;
+    }
+
+    clearTimeout(offlineTimeoutRef.current);
+    timeoutInMS && createOfflineTimeout();
+    enqueue(callback);
   };
 
   const createOfflineTimeout = () => {
     offlineTimeoutRef.current = setTimeout(clearQueue, timeoutInMS);
   };
 
-  const dequeueAll = () => {
-    if (isQueueAsync) {
-      dequeueAllAsync();
-    } else {
-      queueRef.current.forEach(callback => callback());
-      clearQueue();
-    }
-  };
-
-  const dequeueAllAsync = async () => {
-    const callbacks = [...queueRef.current];
-
-    for (const callback of callbacks) {
-      await callback();
-      queueRef.current.shift();
-      forceUpdate();
-    }
-
-    clearQueue();
-  };
-
-  const enqueue = (callback: Function) => {
-    if (isOnline) {
-      callback();
-      return;
-    }
-
-    offlineTimeoutRef.current && clearTimeout(offlineTimeoutRef.current);
-    timeoutInMS && createOfflineTimeout();
-
-    queueRef.current.push(callback);
-  };
-
-  const isQueueEmpty = (): boolean => queueRef.current.length === 0;
-
-  const onOffline = () => {
-    setIsOnline(false);
+  function onOffline() {
+    forceUpdate();
 
     if (!timeoutInMS) {
       return;
     }
 
     createOfflineTimeout();
-  };
+  }
 
-  const onOnline = () => {
-    setIsOnline(true);
-    offlineTimeoutRef.current && clearTimeout(offlineTimeoutRef.current);
-    queueRef.current.length > 0 && dequeueAll();
-  };
-
-  const peek = () => queueRef.current[0];
+  function onOnline() {
+    clearTimeout(offlineTimeoutRef.current);
+    queue.length > 0 && dequeueAll();
+    forceUpdate();
+  }
 
   return {
     dequeueAll,
     dequeueAllAsync,
-    enqueue,
-    isQueueEmpty,
+    enqueue: addToQueue,
     isOnline,
+    isQueueEmpty,
     peek,
-    queue: queueRef.current,
+    queue,
   };
 };
