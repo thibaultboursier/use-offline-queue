@@ -21,7 +21,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
   const {
     clearQueue,
     dequeue,
-    enqueue,
+    enqueue: addToQueue,
     isQueueEmpty,
     peek,
     queue,
@@ -53,7 +53,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
     clearQueue();
   };
 
-  const addToQueue = (callback: Function) => {
+  const enqueue = (callback: Function) => {
     if (isOnline) {
       callback();
       return;
@@ -61,7 +61,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
 
     clearTimeout(offlineTimeoutRef.current);
     timeoutInMS && createOfflineTimeout();
-    enqueue(callback);
+    addToQueue(callback);
   };
 
   const createOfflineTimeout = () => {
@@ -87,7 +87,7 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
   return {
     dequeueAll,
     dequeueAllAsync,
-    enqueue: addToQueue,
+    enqueue,
     isOnline,
     isQueueEmpty,
     peek,
