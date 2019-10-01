@@ -49,8 +49,6 @@ export const useOfflineQueue = (config?: Partial<Config>) => {
       await callback();
       dequeue();
     }
-
-    clearQueue();
   };
 
   const enqueue = (callback: Function) => {
