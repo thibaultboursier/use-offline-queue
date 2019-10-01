@@ -9,7 +9,7 @@ const changeOnlineStatus = (isOnline: boolean) => {
   });
 };
 
-test('should contain one function into queue when status is offline', () => {
+test('should contain three functions into queue when status is offline', () => {
   // Given
   const { result } = renderHook(() => useOfflineQueue());
 
@@ -17,9 +17,29 @@ test('should contain one function into queue when status is offline', () => {
   changeOnlineStatus(false);
   act(() => {
     result.current.enqueue(() => {});
+    result.current.enqueue(() => {});
+    result.current.enqueue(() => {});
   });
 
   // Then
   expect(result.current.isQueueEmpty()).toBe(false);
-  expect(result.current.queue.length).toBe(1);
+  expect(result.current.queue.length).toBe(3);
+});
+
+test('should not contain any function into queue after online status became true', () => {
+  // Given
+  const { result } = renderHook(() => useOfflineQueue());
+
+  // When
+  changeOnlineStatus(false);
+  act(() => {
+    result.current.enqueue(() => {});
+    result.current.enqueue(() => {});
+    result.current.enqueue(() => {});
+  });
+  changeOnlineStatus(true);
+
+  // Then
+  expect(result.current.isQueueEmpty()).toBe(true);
+  expect(result.current.queue.length).toBe(0);
 });
