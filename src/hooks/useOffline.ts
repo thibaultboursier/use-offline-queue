@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 export const useOffline = (
   onOnlineCallback?: () => void,
   onOfflineCallback?: () => void
 ) => {
-  const isOnlineRef = useRef<boolean>(
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
     navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true
   );
 
@@ -19,7 +19,7 @@ export const useOffline = (
   }, []);
 
   const onOffline = () => {
-    isOnlineRef.current = false;
+    setIsOnline(false);
 
     if (typeof onOfflineCallback === 'function') {
       onOfflineCallback();
@@ -27,7 +27,7 @@ export const useOffline = (
   };
 
   const onOnline = () => {
-    isOnlineRef.current = true;
+    setIsOnline(true);
 
     if (typeof onOnlineCallback === 'function') {
       onOnlineCallback();
@@ -35,6 +35,6 @@ export const useOffline = (
   };
 
   return {
-    isOnline: isOnlineRef.current,
+    isOnline,
   };
 };
