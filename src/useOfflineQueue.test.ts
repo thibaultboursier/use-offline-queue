@@ -43,3 +43,24 @@ test('should not contain any function into queue after online status became true
   expect(result.current.isQueueEmpty()).toBe(true);
   expect(result.current.queue.length).toBe(0);
 });
+
+test('should clear async queue containing three functions', async () => {
+  // Given
+  const { result, waitForNextUpdate } = renderHook(() => useOfflineQueue({
+    isQueueAsync: true,
+  }));
+
+  // When
+  changeOnlineStatus(false);
+  act(() => {
+    result.current.enqueue(async () => setTimeout(() => Promise.resolve(), 1000));
+    result.current.enqueue(async () => setTimeout(() => Promise.resolve(), 2000));
+    result.current.enqueue(async () => setTimeout(() => Promise.resolve(), 500));
+  });
+  changeOnlineStatus(true);
+  await waitForNextUpdate();
+
+  // Then
+  expect(result.current.queue.length).toBe(0);
+  expect(result.current.isQueueEmpty()).toBe(true);
+});
