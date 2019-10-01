@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 export const useOffline = (
-  onOnlineCallback?: () => void,
-  onOfflineCallback?: () => void
+  onOfflineCallback?: () => void,
+  onOnlineCallback?: () => void
 ) => {
   const [isOnline, setIsOnline] = useState<boolean>(() =>
     navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true
